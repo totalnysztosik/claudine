@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claudine Name Generator</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface-hover: #222635;
+      --border: #2e3347;
+      --text: #e4e6ef;
+      --text-muted: #8b8fa3;
+      --accent: #7c6cf0;
+      --accent-light: #9d90f5;
+      --green: #4ade80;
+      --red: #f87171;
+      --orange: #fbbf24;
+      --cyan: #22d3ee;
+      --pink: #f472b6;
+      --radius: 10px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.4rem;
+    }
+
+    header h1 span { color: var(--accent); }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .grid-wide {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .chip {
+      padding: 0.55rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 0.78rem;
+      transition: all 0.15s;
+      user-select: none;
+      background: transparent;
+      color: var(--text);
+      font-family: inherit;
+      width: 100%;
+    }
+
+    .chip:hover { border-color: var(--accent); background: var(--surface-hover); }
+
+    .chip.selected {
+      border-color: var(--accent);
+      background: rgba(124, 108, 240, 0.15);
+      color: var(--accent-light);
+      font-weight: 600;
+    }
+
+    .chip .chip-code {
+      display: block;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-bottom: 2px;
+    }
+
+    .chip .chip-label {
+      display: block;
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .chip.selected .chip-label { color: var(--accent-light); }
+
+    .name-input-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .name-prefix {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .name-prefix .seg-prefix { color: var(--cyan); }
+    .name-prefix .seg-type { color: var(--green); }
+    .name-prefix .seg-dept { color: var(--orange); }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0.65rem 0.85rem;
+      font-family: inherit;
+      font-size: 1rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type="text"]:focus { border-color: var(--accent); }
+
+    input[type="text"]::placeholder { color: var(--text-muted); opacity: 0.5; }
+
+    .result-box {
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+
+    .result-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+
+    .result-name .seg-prefix { color: var(--cyan); }
+    .result-name .seg-type { color: var(--green); }
+    .result-name .seg-dept { color: var(--orange); }
+    .result-name .seg-name { color: var(--pink); }
+    .result-name .sep { color: var(--text-muted); }
+
+    .result-path {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .breakdown {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .breakdown-item {
+      text-align: center;
+    }
+
+    .breakdown-item .label {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .breakdown-item .value {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .validation {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .validation-item {
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .validation-item.pass { color: var(--green); }
+    .validation-item.fail { color: var(--red); }
+    .validation-item.warn { color: var(--orange); }
+
+    .hint {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      font-style: italic;
+    }
+
+    .copy-btn {
+      margin-top: 1rem;
+      padding: 0.5rem 1.5rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .copy-btn:hover { opacity: 0.85; }
+    .copy-btn:active { opacity: 0.7; }
+    .copy-btn.copied { background: var(--green); color: var(--bg); }
+
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0.75rem 0;
+    }
+
+    .section-divider span {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 1rem; }
+      .grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+      .result-name { font-size: 1.1rem; }
+      .breakdown { gap: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1><span>cne</span>-name-generator</h1>
+      <p>Generate Claudine-compliant component names</p>
+    </header>
+
+    <div class="card" id="type-card">
+      <div class="card-title">1. Select Type</div>
+      <div class="grid grid-wide" id="type-grid"></div>
+    </div>
+
+    <div class="card" id="dept-card">
+      <div class="card-title" id="dept-title">2. Select Department</div>
+      <div id="dept-content"></div>
+    </div>
+
+    <div class="card" id="name-card">
+      <div class="card-title" id="name-title">3. Enter Name</div>
+      <div class="name-input-row">
+        <span class="name-prefix" id="name-prefix">cne-???-???-</span>
+        <input type="text" id="name-input" placeholder="e.g. reviewer, fix, typescript...">
+      </div>
+      <div class="hint" id="name-hint"></div>
+    </div>
+
+    <div class="card" id="result-card">
+      <div class="card-title">Result</div>
+      <div id="result-content">
+        <div class="empty-state">Select a type and department, then enter a name</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TYPES = [
+      { code: 'agt', label: 'Agent', hint: 'Role noun: reviewer, debugger, planner', file: '.claude/agents/', ext: '.md' },
+      { code: 'cmd', label: 'Command', hint: 'Imperative verb: fix, plan, audit, deploy', file: '.claude/commands/', ext: '.md' },
+      { code: 'skl', label: 'Skill', hint: 'Capability: typescript, tdd, react', file: '.claude/skills/', ext: '/SKILL.md' },
+      { code: 'rul', label: 'Rule', hint: 'Constraint: immutability, no-secrets, coverage', file: '.claude/rules/', ext: '.md' },
+      { code: 'hk',  label: 'Hook', hint: 'Trigger-action: format, lint, test', file: 'settings.json', ext: '' },
+      { code: 'scr', label: 'Script', hint: 'Task: validate-skills, update-docs', file: 'scripts/', ext: '.sh' },
+      { code: 'doc', label: 'Document', hint: 'Topic: architecture, philosophy', file: 'docs/', ext: '.md' },
+      { code: 'tpl', label: 'Template', hint: 'Purpose: agt-base, cmd-base', file: 'templates/', ext: '.md' },
+      { code: 'wfl', label: 'Workflow', hint: 'Flow: bugfix, feature, release', file: 'workflows/', ext: '.md' },
+      { code: 'std', label: 'Standard', hint: 'Quality standard: communication', file: 'standards/', ext: '.md' },
+      { code: 'tst', label: 'Test', hint: 'Test: skill-trigger, naming', file: 'tests/', ext: '.md' },
+      { code: 'ref', label: 'Reference', hint: 'Material: style-guide, source-repos', file: 'research/', ext: '.md' },
+    ];
+
+    const DEPARTMENTS = {
+      engineering: [
+        { code: 'dev', label: 'Development' },
+        { code: 'qa',  label: 'Quality' },
+        { code: 'arc', label: 'Architecture' },
+        { code: 'dop', label: 'DevOps' },
+        { code: 'sec', label: 'Security' },
+        { code: 'db',  label: 'Database' },
+      ],
+      product: [
+        { code: 'pm', label: 'Project Mgmt' },
+        { code: 'po', label: 'Product' },
+        { code: 'ba', label: 'Business Analysis' },
+      ],
+      creative: [
+        { code: 'ui',  label: 'Design' },
+        { code: 'twr', label: 'Tech Writing' },
+        { code: 'seo', label: 'SEO' },
+        { code: 'mkt', label: 'Marketing' },
+      ],
+      operations: [
+        { code: 'ops', label: 'Operations' },
+        { code: 'cld', label: 'Cloud' },
+        { code: 'net', label: 'Networking' },
+      ],
+      governance: [
+        { code: 'cmp', label: 'Compliance' },
+        { code: 'fin', label: 'Finance' },
+      ],
+      meta: [
+        { code: 'core', label: 'Claudine Core' },
+        { code: 'git',  label: 'Git Operations' },
+        { code: 'ext',  label: 'External' },
+      ],
+    };
+
+    const RULE_TOPICS = [
+      { code: 'code',  label: 'Coding' },
+      { code: 'git',   label: 'Git' },
+      { code: 'test',  label: 'Testing' },
+      { code: 'sec',   label: 'Security' },
+      { code: 'perf',  label: 'Performance' },
+      { code: 'style', label: 'Style' },
+      { code: 'flow',  label: 'Workflow' },
+      { code: 'self',  label: 'Self-Improvement' },
+    ];
+
+    const HOOK_WHENS = [
+      { code: 'pre',  label: 'Before (pre)' },
+      { code: 'post', label: 'After (post)' },
+      { code: 'stop', label: 'On Stop' },
+    ];
+
+    const BANNED_WORDS = ['claudine', 'claude', 'new', 'old', 'v2', 'legacy', 'helper', 'util', 'misc', 'my', 'custom', 'main', 'base', 'default'];
+
+    const NAME_LABELS = {
+      agt: 'role',
+      cmd: 'action',
+      skl: 'capability',
+      rul: 'constraint',
+      hk:  'action',
+      scr: 'task',
+      doc: 'topic',
+      tpl: 'purpose',
+      wfl: 'flow name',
+      std: 'standard',
+      tst: 'test name',
+      ref: 'material',
+    };
+
+    let selectedType = null;
+    let selectedDept = null;
+
+    function createChip(item, group) {
+      const btn = document.createElement('button');
+      btn.className = 'chip';
+      btn.dataset.code = item.code;
+      btn.dataset.group = group;
+      btn.innerHTML = `<span class="chip-code">${item.code}</span><span class="chip-label">${item.label}</span>`;
+      btn.addEventListener('click', () => handleChipClick(btn, group));
+      return btn;
+    }
+
+    function handleChipClick(btn, group) {
+      const siblings = document.querySelectorAll(`.chip[data-group="${group}"]`);
+      siblings.forEach(s => s.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      if (group === 'type') {
+        selectedType = TYPES.find(t => t.code === btn.dataset.code);
+        selectedDept = null;
+        renderDeptSection();
+        updateNameHint();
+        updateResult();
+      } else {
+        selectedDept = btn.dataset.code;
+        updateNamePrefix();
+        updateResult();
+      }
+    }
+
+    function renderTypeGrid() {
+      const grid = document.getElementById('type-grid');
+      TYPES.forEach(t => grid.appendChild(createChip(t, 'type')));
+    }
+
+    function renderDeptSection() {
+      const content = document.getElementById('dept-content');
+      const title = document.getElementById('dept-title');
+      content.innerHTML = '';
+
+      if (!selectedType) {
+        content.innerHTML = '<div class="empty-state">Select a type first</div>';
+        updateNamePrefix();
+        return;
+      }
+
+      if (selectedType.code === 'rul') {
+        title.textContent = '2. Select Topic';
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-wide';
+        RULE_TOPICS.forEach(t => grid.appendChild(createChip(t, 'dept')));
+        content.appendChild(grid);
+      } else if (selectedType.code === 'hk') {
+        title.textContent = '2. Select Trigger';
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-wide';
+        HOOK_WHENS.forEach(w => grid.appendChild(createChip(w, 'dept')));
+        content.appendChild(grid);
+      } else {
+        title.textContent = '2. Select Department';
+        const divisions = Object.entries(DEPARTMENTS);
+        divisions.forEach(([division, depts]) => {
+          const divider = document.createElement('div');
+          divider.className = 'section-divider';
+          divider.innerHTML = `<span>${division}</span>`;
+          content.appendChild(divider);
+
+          const grid = document.createElement('div');
+          grid.className = 'grid grid-wide';
+          depts.forEach(d => grid.appendChild(createChip(d, 'dept')));
+          content.appendChild(grid);
+        });
+      }
+
+      updateNamePrefix();
+    }
+
+    function updateNameHint() {
+      const hint = document.getElementById('name-hint');
+      const title = document.getElementById('name-title');
+      if (selectedType) {
+        const nameLabel = NAME_LABELS[selectedType.code] || 'name';
+        title.textContent = `3. Enter ${nameLabel.charAt(0).toUpperCase() + nameLabel.slice(1)}`;
+        hint.textContent = selectedType.hint;
+      } else {
+        title.textContent = '3. Enter Name';
+        hint.textContent = '';
+      }
+    }
+
+    function updateNamePrefix() {
+      const prefix = document.getElementById('name-prefix');
+      const typeStr = selectedType ? selectedType.code : '???';
+      const deptStr = selectedDept || '???';
+      prefix.innerHTML =
+        `<span class="seg-prefix">cne</span>` +
+        `-<span class="seg-type">${typeStr}</span>` +
+        `-<span class="seg-dept">${deptStr}</span>-`;
+    }
+
+    function sanitizeName(raw) {
+      return raw
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+    }
+
+    function validate(fullName, rawName) {
+      const checks = [];
+      const name = sanitizeName(rawName);
+
+      checks.push({
+        pass: fullName.startsWith('cne-'),
+        text: 'Starts with cne-',
+      });
+
+      if (selectedType) {
+        checks.push({ pass: true, text: `Valid type code: ${selectedType.code}` });
+      } else {
+        checks.push({ pass: false, text: 'Type not selected' });
+      }
+
+      if (selectedDept) {
+        checks.push({ pass: true, text: `Valid ${selectedType?.code === 'rul' ? 'topic' : selectedType?.code === 'hk' ? 'trigger' : 'department'}: ${selectedDept}` });
+      } else {
+        checks.push({ pass: false, text: selectedType?.code === 'rul' ? 'Topic not selected' : selectedType?.code === 'hk' ? 'Trigger not selected' : 'Department not selected' });
+      }
+
+      if (name.length > 0) {
+        checks.push({ pass: true, text: `Name provided: ${name}` });
+      } else {
+        checks.push({ pass: false, text: 'Name is empty' });
+      }
+
+      checks.push({
+        pass: fullName === fullName.toLowerCase(),
+        text: 'All lowercase',
+      });
+
+      checks.push({
+        pass: !fullName.includes('_') && !fullName.includes('.'),
+        text: 'Hyphen separators only',
+      });
+
+      const nameOnly = fullName.replace(/^cne-[a-z]+-[a-z]+-/, '');
+      const totalLen = fullName.length;
+      checks.push({
+        pass: totalLen <= 50,
+        text: `Length: ${totalLen}/50 chars`,
+        warn: totalLen > 40 && totalLen <= 50,
+      });
+
+      const foundBanned = BANNED_WORDS.filter(w => name.split('-').includes(w));
+      checks.push({
+        pass: foundBanned.length === 0,
+        text: foundBanned.length > 0
+          ? `Banned word(s): ${foundBanned.join(', ')}`
+          : 'No banned words',
+      });
+
+      if (selectedType?.code === 'agt' && name.length > 0) {
+        const verbEndings = ['fix', 'plan', 'audit', 'deploy', 'scan', 'build', 'test', 'review', 'create', 'check'];
+        const isVerb = verbEndings.includes(name);
+        checks.push({
+          pass: !isVerb,
+          text: isVerb ? `Agent role should be a noun (try "${name}er" or "${name}or")` : 'Agent role is a noun',
+          warn: isVerb,
+        });
+      }
+
+      if (selectedType?.code === 'cmd' && name.length > 0) {
+        const nounEndings = name.endsWith('er') || name.endsWith('or') || name.endsWith('ing');
+        checks.push({
+          pass: !nounEndings,
+          text: nounEndings ? `Command action should be imperative (remove -er/-or/-ing)` : 'Command action is imperative',
+          warn: nounEndings,
+        });
+      }
+
+      return checks;
+    }
+
+    function getFilePath(fullName) {
+      if (!selectedType) return '';
+      if (selectedType.code === 'hk') return `settings.json  (name: "${fullName}")`;
+      if (selectedType.code === 'skl') return `${selectedType.file}${fullName}/SKILL.md`;
+      return `${selectedType.file}${fullName}${selectedType.ext}`;
+    }
+
+    function updateResult() {
+      const container = document.getElementById('result-content');
+      const rawName = document.getElementById('name-input').value.trim();
+      const name = sanitizeName(rawName);
+
+      if (!selectedType && !selectedDept && !name) {
+        container.innerHTML = '<div class="empty-state">Select a type and department, then enter a name</div>';
+        return;
+      }
+
+      const typeCode = selectedType ? selectedType.code : '???';
+      const deptCode = selectedDept || '???';
+      const nameCode = name || '???';
+      const fullName = `cne-${typeCode}-${deptCode}-${nameCode}`;
+
+      const checks = validate(fullName, rawName);
+      const allPass = checks.every(c => c.pass);
+      const filePath = getFilePath(fullName);
+
+      const deptLabel = selectedType?.code === 'rul' ? 'topic' : selectedType?.code === 'hk' ? 'trigger' : 'department';
+      const nameLabel = selectedType ? (NAME_LABELS[selectedType.code] || 'name') : 'name';
+
+      container.innerHTML = `
+        <div class="result-box">
+          <div class="result-name">
+            <span class="seg-prefix">cne</span><span class="sep">-</span><span class="seg-type">${typeCode}</span><span class="sep">-</span><span class="seg-dept">${deptCode}</span><span class="sep">-</span><span class="seg-name">${nameCode}</span>
+          </div>
+          ${filePath ? `<div class="result-path">${filePath}</div>` : ''}
+          <div class="breakdown">
+            <div class="breakdown-item">
+              <div class="label">prefix</div>
+              <div class="value" style="color:var(--cyan)">cne</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="label">type</div>
+              <div class="value" style="color:var(--green)">${typeCode}</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="label">${deptLabel}</div>
+              <div class="value" style="color:var(--orange)">${deptCode}</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="label">${nameLabel}</div>
+              <div class="value" style="color:var(--pink)">${nameCode}</div>
+            </div>
+          </div>
+          ${allPass && name ? `<button class="copy-btn" onclick="copyName('${fullName}')">Copy Name</button>` : ''}
+          <div class="validation">
+            ${checks.map(c => `
+              <div class="validation-item ${c.pass ? (c.warn ? 'warn' : 'pass') : 'fail'}">
+                ${c.pass ? (c.warn ? '~' : '\u2713') : '\u2717'} ${c.text}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function copyName(name) {
+      navigator.clipboard.writeText(name).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        if (btn) {
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = 'Copy Name';
+            btn.classList.remove('copied');
+          }, 1500);
+        }
+      });
+    }
+
+    document.getElementById('name-input').addEventListener('input', updateResult);
+
+    renderTypeGrid();
+    renderDeptSection();
+    updateNamePrefix();
+    updateResult();
+  </script>
+</body>
+</html>
